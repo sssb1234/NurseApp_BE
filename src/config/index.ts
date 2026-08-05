@@ -2,7 +2,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 export const config = {
-  env: process.env.NODE_ENV || 'development',
+  env: process.env.NODE_ENV || 'production',
   port: Number(process.env.PORT) || 5000,
   appName: process.env.APP_NAME || 'NursesCare Platform API',
 

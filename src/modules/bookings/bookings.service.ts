@@ -4,7 +4,7 @@
  */
 import db from '../../db';
 import { createError } from '../../middleware/errorHandler';
-import type { UserRow, NurseProfileRow, BookingRow } from '../../types';
+import type { UserRow, NurseProfileRow, BookingRow, ServiceType,BookingStatus } from '../../types';
 
 // ── Serialiser ────────────────────────────────────────────────────────────────
 
@@ -35,7 +35,7 @@ export async function createBooking(
   currentUser: UserRow,
   body: {
     nurseId: string;
-    serviceType: string;
+    serviceType: ServiceType;
     startDate: string;
     endDate: string;
     hours: number;
@@ -93,7 +93,7 @@ export async function getBookingById(id: string, currentUser: UserRow) {
 async function transitionBooking(
   id: string,
   currentUser: UserRow,
-  newStatus: string,
+  newStatus: BookingStatus,
   allowedFrom: string[]
 ) {
   const booking = await db<BookingRow>('bookings').where({ id }).first();

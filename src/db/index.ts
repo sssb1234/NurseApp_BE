@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const env = process.env.NODE_ENV || 'development';
+const env = process.env.NODE_ENV || 'production';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const knexConfig = require('./knexfile')[env];

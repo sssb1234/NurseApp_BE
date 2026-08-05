@@ -1,0 +1,43 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: ncp_user
+      POSTGRES_PASSWORD: ncp_pass
+      POSTGRES_DB: ncp_db
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      - ./scripts/init_pgcrypto.sql:/docker-entrypoint-initdb.d/01_pgcrypto.sql
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ncp_user -d ncp_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: ncp_db
+      DB_USER: ncp_user
+      DB_PASSWORD: ncp_pass
+      NODE_ENV: production
+    ports:
+      - "3000:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./uploads:/app/uploads
+
+volumes:
+  pg_data:

@@ -24,7 +24,7 @@ function serializeProfile(
     id: profile.id,
     userId: profile.user_id,
     fullName: `${user.first_name} ${user.last_name}`,
-    avatarUrl: user.avatar_url ?? null,
+    //avatarUrl: user.avatar_url ?? null,
     specializations: specList(profile),
     yearsOfExperience: profile.years_of_experience,
     hourlyRate: profile.hourly_rate,

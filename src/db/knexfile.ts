@@ -7,11 +7,11 @@ const config: { [key: string]: Knex.Config } = {
   development: {
     client: 'pg',
     connection: {
-      host: process.env.DB_HOST || 'localhost',
-      port: Number(process.env.DB_PORT) || 5432,
-      database: process.env.DB_NAME || 'test',
-      user: process.env.DB_USER || 'myuser',
-      password: process.env.DB_PASSWORD || 'root',
+      host: process.env.DB_HOST || 'db.ezxbaqrdcjocgpzivsdi.supabase.co',
+      port: Number(process.env.DB_PORT) || 6543,
+      database: process.env.DB_NAME || 'postgres',
+      user: process.env.DB_USER || 'postgres',
+      password: process.env.DB_PASSWORD || 'R3100k6HULKQhJPv',
       ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
     },
     migrations: {

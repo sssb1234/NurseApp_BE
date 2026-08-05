@@ -24,7 +24,7 @@ const app = express();
 
 app.use(helmet());
 app.use(cors({
-  origin: "http://localhost:8000",
+  origin: "https://nurse-app-fe-nine.vercel.app",
   //credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ["Content-Type", "Authorization"],

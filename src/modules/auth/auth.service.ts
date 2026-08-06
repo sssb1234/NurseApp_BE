@@ -14,7 +14,7 @@ import {
 } from '../../utils/mfa';
 import { createError } from '../../middleware/errorHandler';
 import type { UserRow, MfaConfigRow } from '../../types';
-import logger from '@/utils/logger';
+import logger from '../../utils/logger';
 
 // ── Shared serialiser ──────────────────────────────────────────────────────────
 

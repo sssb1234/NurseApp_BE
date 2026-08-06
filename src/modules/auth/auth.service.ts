@@ -42,6 +42,7 @@ export async function registerUser(body: {
   role: 'patient' | 'nurse' | 'admin' | 'facility_admin';
   phone?: string;
 }) {
+  logger.info('db ', db);
   const existing = await db<UserRow>('users').where({ email: body.email.toLowerCase() }).first();
   if (existing) throw createError('An account with this email already exists', 409);
 

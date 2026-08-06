@@ -42,7 +42,9 @@ export async function registerUser(body: {
   role: 'patient' | 'nurse' | 'admin' | 'facility_admin';
   phone?: string;
 }) {
-  logger.info('db ', db);
+  logger.info("NODE_ENV = ", process.env.NODE_ENV);
+  logger.info("DATABASE_URL exists = ", !!process.env.DATABASE_URL);
+  logger.info("DB_HOST = ", process.env.DB_HOST);
   const existing = await db<UserRow>('users').where({ email: body.email.toLowerCase() }).first();
   if (existing) throw createError('An account with this email already exists', 409);
 

@@ -21,7 +21,7 @@ import logger from './utils/logger';
 const app = express();
 
 // ── Security & utility middleware ─────────────────────────────────────────────
-app.set("trustProxy", false);
+//app.set("trustProxy", false);
 app.use(helmet());
 app.use(cors({
   origin: "https://nurse-app-fe-nine.vercel.app",

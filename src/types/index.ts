@@ -9,7 +9,8 @@ export interface UserRow {
   first_name: string;
   last_name: string;
   phone: string | null;           // stored encrypted
-  role: UserRole;
+  //role: UserRole;
+  role: string;
   //avatar_url: string | null;
   date_of_birth: Date;
   emergency_contact: string | null;

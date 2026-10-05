@@ -6,6 +6,9 @@
  *   POST /api/v1/auth/logout
  *   GET  /api/v1/auth/me
  *   POST /api/v1/auth/refresh
+ *   POST /api/v1/auth/check-email
+ *   POST /api/v1/auth/forgot-password
+ *   POST /api/v1/auth/reset-password
  *   POST /api/v1/auth/mfa/setup
  *   POST /api/v1/auth/mfa/confirm
  *   POST /api/v1/auth/mfa/verify
@@ -83,6 +86,46 @@ router.post(
   async (req: Request, res: Response) => {
     const result = await authService.refreshAccessToken(req.body.refresh_token as string);
     res.json(result);
+  }
+);
+
+// ── Check email ────────────────────────────────────────────────────────────────
+
+router.post(
+  '/check-email',
+  [body('email').isEmail().normalizeEmail()],
+  validate,
+  async (req: Request, res: Response) => {
+    const result = await authService.checkEmailExists(req.body.email as string);
+    res.json(result);
+  }
+);
+
+// ── Forgot password ────────────────────────────────────────────────────────────
+
+router.post(
+  '/forgot-password',
+  [body('email').isEmail().normalizeEmail()],
+  validate,
+  async (req: Request, res: Response) => {
+    const result = await authService.forgotPassword(req.body.email as string);
+    res.json(result);
+  }
+);
+
+// ── Reset password ─────────────────────────────────────────────────────────────
+
+router.post(
+  '/reset-password',
+  [
+    body('email').isEmail().normalizeEmail(),
+    body('passcode').notEmpty().trim(),
+    body('newPassword').isLength({ min: 8 }),
+  ],
+  validate,
+  async (req: Request, res: Response) => {
+    await authService.resetPassword(req.body);
+    res.status(204).end();
   }
 );
 

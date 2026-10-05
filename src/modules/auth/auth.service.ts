@@ -1,7 +1,9 @@
 /**
- * Auth service — register, login, MFA, OAuth, refresh, logout.
+ * Auth service — register, login, MFA, OAuth, refresh, logout,
+ *                check-email, forgot-password, reset-password.
  * Keeps all DB + crypto logic out of the router.
  */
+import crypto from 'crypto';
 import db from '../../db';
 import { encrypt, decrypt } from '../../db/crypto';
 import { hashPassword, verifyPassword } from '../../utils/password';
@@ -262,6 +264,86 @@ export async function handleOAuthUser(info: {
     refresh_token: rawRefresh,
     mfa_required: false,
   };
+}
+
+// ── Check email ────────────────────────────────────────────────────────────────
+
+export async function checkEmailExists(email: string): Promise<{ exists: boolean }> {
+  const user = await db<UserRow>('users').where({ email: email.toLowerCase() }).first();
+  return { exists: !!user };
+}
+
+// ── Forgot password ────────────────────────────────────────────────────────────
+
+/**
+ * Generates a 6-digit numeric passcode, stores a hashed version in
+ * `password_reset_tokens` (valid for 15 min), and returns the raw passcode.
+ *
+ * In production you would email the passcode instead of returning it.
+ * The `passcode` field in the response is intentionally omitted when
+ * NODE_ENV === 'production' — wire up your email transport there.
+ */
+export async function forgotPassword(email: string): Promise<{ message: string; passcode?: string }> {
+  const user = await db<UserRow>('users').where({ email: email.toLowerCase() }).first();
+
+  // Always return a success-like response to prevent email enumeration.
+  if (!user) {
+    return { message: 'If that email is registered you will receive a reset code shortly.' };
+  }
+
+  // Invalidate any existing unused tokens for this user.
+  await db('password_reset_tokens')
+    .where({ user_id: user.id, used: false })
+    .update({ used: true });
+
+  // Generate a 6-digit passcode.
+  const passcode = String(crypto.randomInt(100000, 999999));
+  const tokenHash = crypto.createHash('sha256').update(passcode).digest('hex');
+
+  const expiresAt = new Date();
+  expiresAt.setMinutes(expiresAt.getMinutes() + 15);
+
+  await db('password_reset_tokens').insert({
+    user_id: user.id,
+    token_hash: tokenHash,
+    expires_at: expiresAt,
+  });
+
+  // TODO: replace with email delivery in production.
+  const result: { message: string; passcode?: string } = {
+    message: 'If that email is registered you will receive a reset code shortly.',
+  };
+  if (process.env.NODE_ENV !== 'production') {
+    result.passcode = passcode;
+  }
+  return result;
+}
+
+// ── Reset password ─────────────────────────────────────────────────────────────
+
+export async function resetPassword(body: {
+  email: string;
+  passcode: string;
+  newPassword: string;
+}): Promise<void> {
+  const user = await db<UserRow>('users').where({ email: body.email.toLowerCase() }).first();
+  if (!user) throw createError('Invalid or expired reset code', 400);
+
+  const tokenHash = crypto.createHash('sha256').update(body.passcode).digest('hex');
+  const token = await db('password_reset_tokens')
+    .where({ user_id: user.id, token_hash: tokenHash, used: false })
+    .first();
+
+  if (!token || new Date(token.expires_at) < new Date()) {
+    throw createError('Invalid or expired reset code', 400);
+  }
+
+  const hashed_password = await hashPassword(body.newPassword);
+
+  await db.transaction(async (trx) => {
+    await trx('users').where({ id: user.id }).update({ hashed_password });
+    await trx('password_reset_tokens').where({ id: token.id }).update({ used: true });
+  });
 }
 
 // ── Internal ───────────────────────────────────────────────────────────────────
